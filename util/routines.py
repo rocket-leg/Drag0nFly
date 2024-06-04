@@ -1,6 +1,8 @@
 from util.common import *
+from util.objects import SmartRoutine
 
 # This file holds all of the mechanical tasks, called "routines", that the bot can do
+
 
 class drive():
     def __init__(self, speed, target=None) -> None:
@@ -142,6 +144,7 @@ class flip():
     # Flip takes a vector in local coordinates and flips/dodges in that direction
     # cancel causes the flip to cancel halfway through, which can be used to half-flip
     def __init__(self, vector, cancel=False):
+        print('FLIP INTENT GENERATED')
         self.vector = vector.normalize()
         self.pitch = abs(self.vector[0]) * -sign(self.vector[0])
         self.yaw = abs(self.vector[1]) * sign(self.vector[1])
@@ -170,7 +173,7 @@ class flip():
             agent.set_intent(recovery())
 
 
-class goto():
+class GoTo(SmartRoutine):
     # Drives towards a designated (stationary) target
     # Optional vector controls where the car should be pointing upon reaching the target
     # TODO - slow down if target is inside our turn radius
@@ -187,7 +190,7 @@ class goto():
                    self.target + Vector3(0, 0, 500), [255, 0, 255])
 
         if self.vector != None:
-            # See commends for adjustment in jump_shot or aerial for explanation
+            # See comments for adjustment in jump_shot or aerial for explanation
             side_of_vector = sign(self.vector.cross(
                 (0, 0, 1)).dot(car_to_target))
             car_to_target_perp = car_to_target.cross(
@@ -211,10 +214,11 @@ class goto():
         agent.controller.handbrake = True if abs(
             angles[1]) > 2.3 else agent.controller.handbrake
 
-        velocity = 1+agent.me.velocity.magnitude()
+        velocity = 1 + agent.me.velocity.magnitude()
         if distance_remaining < 350:
             agent.clear_intent()
         elif abs(angles[1]) < 0.05 and velocity > 600 and velocity < 2150 and distance_remaining / velocity > 2.0:
+            print('IM FLIPPING')
             agent.set_intent(flip(local_target))
         elif abs(angles[1]) > 2.8 and velocity < 200:
             agent.set_intent(flip(local_target, True))
@@ -389,10 +393,7 @@ class jump_shot():
                 agent.controller.pitch = self.p if abs(self.p) > 0.2 else 0
                 agent.controller.yaw = self.y if abs(self.y) > 0.3 else 0
 
-
-class kickoff():
-    # A simple 1v1 kickoff that just drives up behind the ball and dodges
-    # misses the boost on the slight-offcenter kickoffs haha
+class Kickoff(SmartRoutine):
     def run(self, agent):
         target = agent.ball.location + Vector3(0, 200*side(agent.team), 0)
         local_target = agent.me.local(target - agent.me.location)
@@ -403,6 +404,8 @@ class kickoff():
             agent.set_intent(
                 flip(agent.me.local(agent.foe_goal.location - agent.me.location)))
 
+    def next_check(self) -> int:
+        return super().next_check()
 
 class recovery():
     # Point towards our velocity vector and land upright, unless we aren't moving very fast
@@ -422,11 +425,10 @@ class recovery():
         if not agent.me.airborne:
             agent.clear_intent()
 
-
-class short_shot():
+class ShortShot(SmartRoutine):
     # This routine drives towards the ball and attempts to hit it towards a given target
     # It does not require ball prediction and kinda guesses at where the ball will be on its own
-    def __init__(self, target):
+    def __init__(self, target: Vector3):
         self.target = target
 
     def run(self, agent):

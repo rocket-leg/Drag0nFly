@@ -1,12 +1,39 @@
 # This file is for strategy
 
 from util.objects import *
-from util.routines import *
+from util.routines import Kickoff, ShortShot, GoTo
+from util.common import compare_vec_mag
 
 
-class Bot(GoslingAgent):
+class Bot(CommandAgent):
+    intent_swaps = 0
     # This function runs every in-game tick (every time the game updates anything)
     def run(self):
+        me = self.me
+        ball = self.ball
+        opponent = self.foes[0]
+
+        if self.get_intent() is not None:
+            return
+
+        self.intent_swaps += 1
+        print('intent swaps', self.intent_swaps)
+
+        if self.kickoff_flag:
+            self.set_intent(Kickoff())
+            return
+        
+        # offense
+        # if compare_vec_mag(me.location - ball.location, opponent.location - ball.location) > 0:
+        if (me.location - ball.location).magnitude() < (opponent.location - ball.location).magnitude():
+            if (me.location - self.foe_goal.location).magnitude() < (me.location - ball.location).magnitude():
+                self.set_intent(GoTo(self.friend_goal.location))
+                return
+            self.set_intent(ShortShot(self.foe_goal.location))
+            return
+        else:
+            self.set_intent(GoTo(ball.location))
+
         # if kickoff, kick off
         # if within <x> seconds of kickoff, run strategy based on how the opponent is acting
 
@@ -40,7 +67,7 @@ class Bot(GoslingAgent):
         #       - If not on net, predict where it's going and plan a hit
         # - Opponent is far from ball
         #   - If moving toward ball
-        #     - If we can beat them, plan a hit
+        #     - If we can beat them, plan a hit, even if it's toward our net
         #   - If we can't beat them, estimate time to possession
         #     - Move to "Opponent has ball" strategy if we can't beat them
         #     - Look to acquire position or boost in most effective manner before moving to "Opponent has ball" strategy
@@ -62,5 +89,3 @@ class Bot(GoslingAgent):
         #   what they do after shots, where they get in bad position, etc...)
         # Can we know all of the info about our opponent?
 
-        # set_intent tells the bot what it's trying to do
-        self.set_intent(drive(500))

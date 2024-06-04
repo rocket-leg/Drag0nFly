@@ -172,3 +172,6 @@ def invlerp(a, b, v):
     # For instance, it returns 0 if v == a, and returns 1 if v == b, and returns 0.5 if v is exactly between a and b
     # Works for both numbers and Vector3s
     return (v - a)/(b - a)
+
+def compare_vec_mag(v1: Vector3, v2: Vector3):
+    return v1.magnitude() - v2.magnitude()

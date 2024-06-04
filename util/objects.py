@@ -6,7 +6,7 @@ from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 # This file holds all of the objects used in gosling utils
 # Includes custom vector and matrix objects
 
-class GoslingAgent(BaseAgent):
+class CommandAgent(BaseAgent):
     # This is the main object of Gosling Utils. It holds/updates information about the game and runs routines
     # All utils rely on information being structured and accessed the same way as configured in this class
     def initialize_agent(self):
@@ -24,10 +24,10 @@ class GoslingAgent(BaseAgent):
         self.friend_goal = goal_object(self.team)
         self.foe_goal = goal_object(not self.team)
         # Where we store the bot's current objective
-        self.intent = None
+        self.intent: SmartRoutine | None = None
         # Game time
         self.time = 0.0
-        # Whether or not GoslingAgent has run its get_ready() function
+        # Whether or not CommandAgent has run its get_ready() function
         self.ready = False
         # the controller that is returned to the framework after every tick
         self.controller = SimpleControllerState()
@@ -109,7 +109,7 @@ class GoslingAgent(BaseAgent):
         self.renderer.begin_rendering()
         # Run our strategy code
         self.run()
-        # run the routine on the end of the stack
+
         intent = self.get_intent()
         if intent is not None:
             intent.run(self)
@@ -121,10 +121,19 @@ class GoslingAgent(BaseAgent):
         # override this with your strategy code
         pass
 
+class SmartRoutine():
+    last_check: int
+    name: str
+
+    def run(self, agent: CommandAgent) -> None:
+        pass
+    
+    def next_check(self) -> int:
+        return 100
 
 class car_object:
     # The carObject, and kin, convert the gametickpacket in something a little friendlier to use,
-    # and are updated by GoslingAgent as the game runs
+    # and are updated by CommandAgent as the game runs
     def __init__(self, index, packet=None):
         self.location = Vector3(0, 0, 0)
         self.orientation = Matrix3(0, 0, 0)
