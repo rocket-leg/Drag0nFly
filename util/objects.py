@@ -113,6 +113,9 @@ class CommandAgent(BaseAgent):
         intent = self.get_intent()
         if intent is not None:
             intent.run(self)
+            if intent.first_run is True:
+                intent.first_run = False
+                print('running', intent.__class__.__name__)
         self.renderer.end_rendering()
         # send our updated controller back to rlbot
         return self.controller
@@ -124,6 +127,8 @@ class CommandAgent(BaseAgent):
 class SmartRoutine():
     last_check: int
     name: str
+    # gets flipped to false on the first time the routine is run
+    first_run: bool = True
 
     def run(self, agent: CommandAgent) -> None:
         pass

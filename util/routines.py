@@ -135,12 +135,12 @@ class aerial_shot():
                 self.counter += 1
 
         if raw_time_remaining < -0.25:
-            agent.set_intent(recovery())
+            agent.set_intent(Recovery())
         if not shot_valid(agent, self, 90):
             agent.clear_intent()
 
 
-class flip():
+class Flip(SmartRoutine):
     # Flip takes a vector in local coordinates and flips/dodges in that direction
     # cancel causes the flip to cancel halfway through, which can be used to half-flip
     def __init__(self, vector, cancel=False):
@@ -170,7 +170,7 @@ class flip():
             agent.controller.pitch = self.pitch
             agent.controller.yaw = self.yaw
         else:
-            agent.set_intent(recovery())
+            agent.set_intent(Recovery())
 
 
 class GoTo(SmartRoutine):
@@ -219,11 +219,11 @@ class GoTo(SmartRoutine):
             agent.clear_intent()
         elif abs(angles[1]) < 0.05 and velocity > 600 and velocity < 2150 and distance_remaining / velocity > 2.0:
             print('IM FLIPPING')
-            agent.set_intent(flip(local_target))
+            agent.set_intent(Flip(local_target))
         elif abs(angles[1]) > 2.8 and velocity < 200:
-            agent.set_intent(flip(local_target, True))
+            agent.set_intent(Flip(local_target, True))
         elif agent.me.airborne:
-            agent.set_intent(recovery(self.target))
+            agent.set_intent(Recovery(self.target))
 
 
 class goto_boost():
@@ -272,9 +272,9 @@ class goto_boost():
         if self.boost.active == False or agent.me.boost >= 99.0 or distance_remaining < 350:
             agent.clear_intent()
         elif agent.me.airborne:
-            agent.set_intent(recovery(self.target))
+            agent.set_intent(Recovery(self.target))
         elif abs(angles[1]) < 0.05 and velocity > 600 and velocity < 2150 and (distance_remaining / velocity > 2.0 or (adjustment < 90 and car_to_target/velocity > 2.0)):
-            agent.set_intent(flip(local_target))
+            agent.set_intent(Flip(local_target))
 
 
 class jump_shot():
@@ -367,13 +367,13 @@ class jump_shot():
                 # If we're out of time or not fast enough to be within 45 units of target at the intercept time, we reset
                 agent.clear_intent()
                 if agent.me.airborne:
-                    agent.set_intent(recovery())
+                    agent.set_intent(Recovery())
             elif local_acceleration_required[2] > self.jump_threshold and local_acceleration_required[2] > local_acceleration_required.flatten().magnitude():
                 # Switch into the jump when the upward acceleration required reaches our threshold, and our lateral acceleration is negligible
                 self.jumping = True
         else:
             if (raw_time_remaining > 0.2 and not shot_valid(agent, self, 150)) or raw_time_remaining <= -0.9 or (not agent.me.airborne and self.counter > 0):
-                agent.set_intent(recovery())
+                agent.set_intent(Recovery())
             elif self.counter == 0 and local_acceleration_required[2] > 0.0 and raw_time_remaining > 0.083:
                 # Initial jump to get airborne + we hold the jump button for extra power as required
                 agent.controller.jump = True
@@ -402,12 +402,12 @@ class Kickoff(SmartRoutine):
         if local_target.magnitude() < 650:
             # flip towards opponent goal
             agent.set_intent(
-                flip(agent.me.local(agent.foe_goal.location - agent.me.location)))
+                Flip(agent.me.local(agent.foe_goal.location - agent.me.location)))
 
     def next_check(self) -> int:
         return super().next_check()
 
-class recovery():
+class Recovery(SmartRoutine):
     # Point towards our velocity vector and land upright, unless we aren't moving very fast
     # A vector can be provided to control where the car points when it lands
     def __init__(self, target=None):
@@ -466,4 +466,4 @@ class ShortShot(SmartRoutine):
             angles[1]) > 2.3 else agent.controller.handbrake
 
         if abs(angles[1]) < 0.05 and (eta < 0.45 or distance < 150):
-            agent.set_intent(flip(agent.me.local(car_to_ball)))
+            agent.set_intent(Flip(agent.me.local(car_to_ball)))
