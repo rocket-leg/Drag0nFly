@@ -2,6 +2,8 @@ import math
 import rlbot.utils.structures.game_data_struct as game_data_struct
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 
+from util.interfaces.SmartRoutine import SmartRoutine
+
 
 # This file holds all of the objects used in gosling utils
 # Includes custom vector and matrix objects
@@ -124,17 +126,17 @@ class CommandAgent(BaseAgent):
         # override this with your strategy code
         pass
 
-class SmartRoutine():
-    last_check: int
-    name: str
-    # gets flipped to false on the first time the routine is run
-    first_run: bool = True
+# class SmartRoutine():
+#     last_check: int
+#     name: str
+#     # gets flipped to false on the first time the routine is run
+#     first_run: bool = True
 
-    def run(self, agent: CommandAgent) -> None:
-        pass
+#     def run(self, agent: CommandAgent) -> None:
+#         pass
     
-    def next_check(self) -> int:
-        return 100
+#     def next_check(self) -> int:
+#         return 100
 
 class car_object:
     # The carObject, and kin, convert the gametickpacket in something a little friendlier to use,
