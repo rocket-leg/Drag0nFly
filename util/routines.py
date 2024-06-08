@@ -1,5 +1,5 @@
 from util.common import *
-from util.objects import SmartRoutine
+from util.interfaces.SmartRoutine import SmartRoutine
 
 # This file holds all of the mechanical tasks, called "routines", that the bot can do
 
